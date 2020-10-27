@@ -2,10 +2,10 @@
 
 namespace App\Repositories;
 
-use App\Models\BusSchedule;
+use App\Models\BusStopDistance;
 use Illuminate\Database\Eloquent\Collection;
 
-class BusScheduleRepository implements BusScheduleRepositoryInterface
+class BusStopDistanceRepository implements BusStopDistanceRepositoryInterface
 {
     /**
      * Get's a record by it's ID
@@ -15,7 +15,7 @@ class BusScheduleRepository implements BusScheduleRepositoryInterface
      */
     public function get($id)
     {
-        return BusSchedule::find($id);
+        return BusStopDistance::find($id);
     }
 
     /**
@@ -25,7 +25,7 @@ class BusScheduleRepository implements BusScheduleRepositoryInterface
      */
     public function all()
     {
-        return BusSchedule::all();
+        return BusStopDistance::all();
     }
 
     /**
@@ -35,7 +35,7 @@ class BusScheduleRepository implements BusScheduleRepositoryInterface
      */
     public function delete($id)
     {
-        BusSchedule::destroy($id);
+        BusStopDistance::destroy($id);
     }
 
     /**
@@ -46,6 +46,6 @@ class BusScheduleRepository implements BusScheduleRepositoryInterface
      */
     public function update($id, array $data)
     {
-        BusSchedule::find($id)->update($data);
+        BusStopDistance::find($id)->update($data);
     }
 }

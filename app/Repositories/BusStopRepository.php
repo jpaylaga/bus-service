@@ -1,11 +1,9 @@
 <?php
 
-
 namespace App\Repositories;
 
 use App\Models\BusStop;
 use Illuminate\Database\Eloquent\Collection;
-
 
 class BusStopRepository implements BusStopRepositoryInterface
 {
