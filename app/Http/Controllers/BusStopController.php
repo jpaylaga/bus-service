@@ -36,10 +36,12 @@ class BusStopController extends Controller
      * Display the specified resource.
      *
      * @param int $id
-     * @return JsonResponse
+     * @return \Illuminate\Database\Eloquent\Collection
      */
     public function show(int $id)
     {
-        return $this->busStopRepository->get($id);
+        return $this->busStopRepository->nextArrival(
+            $this->busStopRepository->get($id)
+        );
     }
 }

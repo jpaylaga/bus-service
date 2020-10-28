@@ -7,6 +7,7 @@ use App\Models\BusSchedule;
 use App\Models\BusStop;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 
 interface BusStopRepositoryInterface
 {
@@ -52,9 +53,9 @@ interface BusStopRepositoryInterface
      *
      * @param BusStop $busStop
      * @param Carbon|null $currentDateTime
-     * @return BusSchedule
+     * @return Collection
      */
-    public function nextArrival(BusStop $busStop, Carbon $currentDateTime = null): BusSchedule;
+    public function nextArrival(BusStop $busStop, Carbon $currentDateTime = null): Collection;
 
     /**
      * Calculate ETA.

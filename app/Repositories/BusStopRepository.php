@@ -67,15 +67,21 @@ class BusStopRepository implements BusStopRepositoryInterface
      * @param Carbon|null $currentDateTime
      * @return mixed
      */
-    public function nextArrival(BusStop $busStop, Carbon $currentDateTime = null): BusSchedule
+    public function nextArrival(BusStop $busStop, Carbon $currentDateTime = null): Collection
     {
         $currentDateTime = $currentDateTime === null ? Carbon::now() : $currentDateTime;
         $currentDayOfWeek = BusSchedule::DAYS_OF_WEEK[$currentDateTime->dayOfWeek];
 
-        return $busStop->busSchedules()->where([
+        // This query can be optimized
+        $latestSchedule = $busStop->busSchedules()->where([
             ['time_of_day', '>=', $currentDateTime->format('H:i:s')],
             ['day_of_week', '=', $currentDayOfWeek],
         ])->first();
+
+        return $busStop->busSchedules()->with('bus')->where([
+            ['time_of_day', '=', $latestSchedule->time_of_day],
+            ['day_of_week', '=', $currentDayOfWeek],
+        ])->get();
     }
 
     /**
