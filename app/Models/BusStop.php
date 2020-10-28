@@ -14,4 +14,9 @@ class BusStop extends Model
         'long',
         'address',
     ];
+
+    public function busSchedules()
+    {
+        return $this->hasMany(BusSchedule::class);
+    }
 }

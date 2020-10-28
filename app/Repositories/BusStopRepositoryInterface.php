@@ -2,6 +2,12 @@
 
 namespace App\Repositories;
 
+use App\Models\Bus;
+use App\Models\BusSchedule;
+use App\Models\BusStop;
+use App\Models\User;
+use Carbon\Carbon;
+
 interface BusStopRepositoryInterface
 {
     /**
@@ -32,4 +38,30 @@ interface BusStopRepositoryInterface
      * @param array
      */
     public function update($id, array $data);
+
+    /**
+     * Get buses near the user.
+     *
+     * @param User $user
+     * @return mixed
+     */
+    public function nearMe(User $user);
+
+    /**
+     * Get the next arrival per bus stop.
+     *
+     * @param BusStop $busStop
+     * @param Carbon|null $currentDateTime
+     * @return BusSchedule
+     */
+    public function nextArrival(BusStop $busStop, Carbon $currentDateTime = null): BusSchedule;
+
+    /**
+     * Calculate ETA.
+     *
+     * @param BusSchedule $busSchedule
+     * @param Carbon|null $currentDateTime
+     * @return int
+     */
+    public function estimatedTimeOfArrivalInMinutes(BusSchedule $busSchedule, Carbon $currentDateTime = null): int;
 }

@@ -15,4 +15,24 @@ class BusSchedule extends Model
         'time_of_day',
         'day_of_week',
     ];
+
+    public const DAYS_OF_WEEK = [
+        0 => 'sunday',
+        1 => 'monday',
+        2 => 'tuesday',
+        3 => 'wednesday',
+        4 => 'thursday',
+        5 => 'friday',
+        6 => 'saturday',
+    ];
+
+    public function busStop()
+    {
+        return $this->belongsTo(BusStop::class);
+    }
+
+    public function bus()
+    {
+        return $this->belongsTo(Bus::class);
+    }
 }

@@ -14,4 +14,9 @@ class Bus extends Model
         'model',
         'company',
     ];
+
+    public function busSchedules()
+    {
+        return $this->hasMany(BusSchedule::class);
+    }
 }
