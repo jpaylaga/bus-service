@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BusStopController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,9 +19,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::middleware('auth:api')->get('/bus-stops', function (Request $request) {
-    return response()->json([
-        'message' => 'Bus stops'
-    ]);
-});
+Route::middleware('auth:api')->resource('bus-stops', BusStopController::class, [
+    'only' => ['index', 'show']
+]);
 
