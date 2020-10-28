@@ -78,7 +78,7 @@ class BusStopRepository implements BusStopRepositoryInterface
             ['day_of_week', '=', $currentDayOfWeek],
         ])->first();
 
-        return $busStop->busSchedules()->with('bus')->where([
+        return $busStop->busSchedules()->with(['bus', 'busStop'])->where([
             ['time_of_day', '=', $latestSchedule->time_of_day],
             ['day_of_week', '=', $currentDayOfWeek],
         ])->get();

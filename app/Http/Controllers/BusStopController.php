@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\BusScheduleCollection;
 use App\Repositories\BusStopRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -36,12 +37,13 @@ class BusStopController extends Controller
      * Display the specified resource.
      *
      * @param int $id
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return BusScheduleCollection
      */
     public function show(int $id)
     {
-        return $this->busStopRepository->nextArrival(
-            $this->busStopRepository->get($id)
-        );
+        return new BusScheduleCollection(
+            $this->busStopRepository->nextArrival(
+                $this->busStopRepository->get($id)
+            ), $this->busStopRepository);
     }
 }
