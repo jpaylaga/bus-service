@@ -48,7 +48,7 @@ class BusScheduleCollection extends ResourceCollection
         $finalBusSchedule = [];
         foreach ($this->collection as $busSchedule) {
             $tmp = $busSchedule->toArray();
-            $tmp['estimated_time_of_arrival'] =
+            $tmp['eta_in_mins'] =
                 $this->busStopRepository->estimatedTimeOfArrivalInMinutes($busSchedule, $this->currentDateTime);
             $finalBusSchedule[] = $tmp;
         }
