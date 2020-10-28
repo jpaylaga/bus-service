@@ -6,6 +6,7 @@ use App\Models\Bus;
 use App\Models\BusSchedule;
 use App\Models\BusStop;
 use App\Models\BusStopDistance;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use phpDocumentor\Reflection\Types\Collection;
 
@@ -18,6 +19,12 @@ class SampleDataSeeder extends Seeder
      */
     public function run()
     {
+        // Create User
+        User::factory()->state([
+            'email' => 'user@test.com',
+            'password' => bcrypt('password'),
+        ])->create();
+
         // Create 3 buses
         $buses = Bus::factory()->count(3)->create();
         $busStops = BusStop::factory()->count(9)->create();
