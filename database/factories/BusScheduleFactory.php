@@ -25,7 +25,7 @@ class BusScheduleFactory extends Factory
             'bus_id' => $this->faker->randomDigit,
             'bus_stop_id' => $this->faker->randomDigit,
             'time_of_day' => $this->faker->time(),
-            'day_of_week' => $this->faker->dayOfWeek,
+            'day_of_week' => strtolower($this->faker->dayOfWeek),
         ];
     }
 }
