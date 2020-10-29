@@ -70,13 +70,29 @@ class BusStopRepository implements BusStopRepositoryInterface
     public function nextArrival(BusStop $busStop, Carbon $currentDateTime = null): Collection
     {
         $currentDateTime = $currentDateTime === null ? Carbon::now() : $currentDateTime;
-        $currentDayOfWeek = BusSchedule::DAYS_OF_WEEK[$currentDateTime->dayOfWeek];
+        $currentDayOfWeekCounter = $currentDateTime->dayOfWeek;
+        $retryCount = 0;
 
-        // This query can be optimized
-        $latestSchedule = $busStop->busSchedules()->where([
-            ['time_of_day', '>=', $currentDateTime->format('H:i:s')],
-            ['day_of_week', '=', $currentDayOfWeek],
-        ])->first();
+        do {
+            $currentDayOfWeek = BusSchedule::DAYS_OF_WEEK[$currentDayOfWeekCounter];
+
+            // This query can be optimized
+            $latestSchedule = $busStop->busSchedules()->where([
+                ['time_of_day', '>=', $currentDateTime->format('H:i:s')],
+                ['day_of_week', '=', $currentDayOfWeek],
+            ])->first();
+
+            if ($currentDayOfWeekCounter < 6) {
+                $currentDayOfWeekCounter++;
+            } else {
+                $currentDayOfWeekCounter = 0;
+            }
+            $retryCount++;
+        } while ($latestSchedule === null && $retryCount < 3);
+
+        if ($latestSchedule === null) {
+            return collect();
+        }
 
         return $busStop->busSchedules()->with(['bus', 'busStop'])->where([
             ['time_of_day', '=', $latestSchedule->time_of_day],
