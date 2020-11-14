@@ -30,7 +30,7 @@ class BusStopController extends Controller
      */
     public function index()
     {
-        return $this->busStopRepository->nearMe(auth()->user());
+        return $this->busStopRepository->nearMe();
     }
 
     /**

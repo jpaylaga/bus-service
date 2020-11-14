@@ -4,7 +4,6 @@ namespace App\Repositories;
 
 use App\Models\BusSchedule;
 use App\Models\BusStop;
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -53,10 +52,9 @@ class BusStopRepository implements BusStopRepositoryInterface
     }
 
     /**
-     * @param User $user
      * @return mixed|void
      */
-    public function nearMe(User $user)
+    public function nearMe()
     {
         // For now I am going to return all bus stops
         return $this->all();

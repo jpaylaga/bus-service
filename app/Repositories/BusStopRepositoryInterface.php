@@ -43,10 +43,9 @@ interface BusStopRepositoryInterface
     /**
      * Get buses near the user.
      *
-     * @param User $user
      * @return mixed
      */
-    public function nearMe(User $user);
+    public function nearMe();
 
     /**
      * Get the next arrival per bus stop.

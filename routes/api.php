@@ -15,11 +15,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-Route::middleware('auth:api')->resource('bus-stops', BusStopController::class, [
+Route::middleware('client')->resource('bus-stops', BusStopController::class, [
     'only' => ['index', 'show']
 ]);
-
