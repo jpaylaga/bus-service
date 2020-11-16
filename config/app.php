@@ -177,6 +177,7 @@ return [
         App\Providers\RepositoryBackendServiceProvider::class,
 
         Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
+        GoogleMaps\ServiceProvider\GoogleMapsServiceProvider::class,
 
     ],
 
@@ -229,6 +230,7 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
+        'GoogleMaps' => GoogleMaps\Facade\GoogleMapsFacade::class,
 
     ],
 
