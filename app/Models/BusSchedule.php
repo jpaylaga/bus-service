@@ -14,6 +14,7 @@ class BusSchedule extends Model
         'bus_stop_id',
         'time_of_day',
         'day_of_week',
+        'is_active',
     ];
 
     public const DAYS_OF_WEEK = [
