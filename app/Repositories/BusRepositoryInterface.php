@@ -2,7 +2,11 @@
 
 namespace App\Repositories;
 
-interface BusRepositoryInterface
+use App\Models\Bus;
+use App\Objects\BusRoute;
+use App\Drivers\BusRoute\Contract\BusRouteDriver;
+
+interface BusRepositoryInterface extends BusRouteDriver
 {
     /**
      * Get's a record by it's ID

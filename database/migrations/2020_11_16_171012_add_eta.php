@@ -14,7 +14,7 @@ class AddEta extends Migration
     public function up()
     {
         Schema::table('bus_stop_distances', function (Blueprint $table) {
-            $table->integer('eta_in_mins');
+            $table->integer('eta_in_mins')->nullable();
         });
     }
 

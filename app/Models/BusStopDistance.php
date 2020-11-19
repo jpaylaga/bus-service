@@ -13,5 +13,6 @@ class BusStopDistance extends Model
         'bus_stop_from_id',
         'bus_stop_to_id',
         'distance_in_km',
+        'eta_in_mins',
     ];
 }

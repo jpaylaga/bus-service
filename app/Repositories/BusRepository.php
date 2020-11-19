@@ -4,9 +4,26 @@ namespace App\Repositories;
 
 use App\Models\Bus;
 use Illuminate\Database\Eloquent\Collection;
+use App\Managers\BusRouteManager;
+use App\Objects\BusRoute;
+use Carbon\Carbon;
 
 class BusRepository implements BusRepositoryInterface
 {
+    /**
+     * @var BusRouteManager
+     */
+    protected $busRouteManager;
+    
+    /**
+     * 
+     * @param BusRouteManager $busRouteManager
+     */
+    public function __construct(BusRouteManager $busRouteManager)
+    {
+        $this->busRouteManager = $busRouteManager;
+    }
+    
     /**
      * Get's a record by it's ID
      *
@@ -47,5 +64,15 @@ class BusRepository implements BusRepositoryInterface
     public function update($id, array $data)
     {
         Bus::find($id)->update($data);
+    }
+    
+    /**
+     * 
+     * {@inheritDoc}
+     * @see \App\Repositories\BusRepositoryInterface::getRoutes()
+     */
+    public function getRoutes(Bus $bus, Carbon $datetime = null): BusRoute
+    {
+        return $this->busRouteManager->driver()->getRoutes($bus, $datetime);
     }
 }
