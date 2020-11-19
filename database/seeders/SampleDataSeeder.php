@@ -132,4 +132,13 @@ class SampleDataSeeder extends Seeder
             'duration' => floor($distanceObj->rows[0]->elements[0]->duration->value / 60),
         ];
     }
+    
+    private function createRoutesPerBus(Bus $bus, BusStop $startingBusStop, $startingHM)
+    {
+        // TODO: Get sorted distances by mins
+        
+        // TODO: Get shortest mins on distances from bus stop
+        
+        // TODO: increment time per schedule based eta in mins. Limit to 24 hrs.
+    }
 }
