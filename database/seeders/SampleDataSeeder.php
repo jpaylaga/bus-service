@@ -14,6 +14,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class SampleDataSeeder extends Seeder
 {
+    private $busStopBatches = 5;
+    
     /**
      * Run the database seeds.
      *
@@ -54,16 +56,17 @@ class SampleDataSeeder extends Seeder
         
         // Aggregiate starting buses by their starting bus stops
         $aggregiate = [];
-        $numberOfBatches = ceil($buses->count() / $busStops->count());
+        
         $busIndex = 0;
         foreach ($busStops as $busStop) {
             $tmp = [
                 'bus_stop' => $busStop,
                 'buses' => [],
             ];
-            for ($i = 0; $i < $numberOfBatches; $i++) {
-                $tmp['buses'][] = $buses[$busIndex++];
-                if (!isset($buses[$busIndex])) {
+            for ($i = 0; $i < $this->busStopBatches; $i++) {
+                if (isset($buses[$busIndex])) {
+                    $tmp['buses'][] = $buses[$busIndex++];
+                } else {
                     break;
                 }
             }
@@ -102,6 +105,7 @@ class SampleDataSeeder extends Seeder
         $busStopsReponse = json_decode($response);
         
         $returnValue = [];
+        
         foreach ($busStopsReponse->results as $busStop) {
             $returnValue[] = [
                 'lat' => $busStop->geometry->location->lat,
@@ -133,7 +137,7 @@ class SampleDataSeeder extends Seeder
     
     private function createRoutesPerBus(Bus $bus, BusStop $startingBusStop, BusStopDistanceRepositoryInterface $busStopDistanceRepository)
     {
-        $sortedDistances = $busStopDistanceRepository->getSorted();
+        $sortedDistances = $busStopDistanceRepository->getSorted(1000);
         
         $daysOfWeek = [
             'sunday',
@@ -179,24 +183,29 @@ class SampleDataSeeder extends Seeder
         array $visitedIds,
         ?BusStopDistance &$currentDistance
     ) {
-        $visitedIds[] = $distance->id;
         $currentDistance = $distance;
-        
-        // Consider the inverse distance as visited
-        $inverse = $sortedDistances->filter(function ($v, $k) use ($distance) {
-            return $v->bus_stop_from_id === $distance->bus_stop_to_id && $v->bus_stop_to_id === $distance->bus_stop_from_id;
-        });
-        if ($inverse->count() > 0) {
-            $visitedIds[] = $inverse->first()->id;
-        }
             
-        $startOfDay = $startOfDay->addMinutes($distance->eta_in_mins);
-        BusSchedule::factory()->create([
-            'bus_id' => $bus->id,
-            'bus_stop_id' => $currentDistance->bus_stop_to_id,
-            'day_of_week' => $day,
-            'time_of_day' => $startOfDay->format('H:i:s'),
-        ]);
+        $startOfDay = $startOfDay->addMinutes($distance->eta_in_mins + 10);
+        $cmpDateTime = Carbon::now()->startOfDay();
+        
+        if ($cmpDateTime->diffInHours($startOfDay) < 24) {
+            BusSchedule::factory()->create([
+                'bus_id' => $bus->id,
+                'bus_stop_id' => $currentDistance->bus_stop_to_id,
+                'day_of_week' => $day,
+                'time_of_day' => $startOfDay->format('H:i:s'),
+            ]);
+            
+            $visitedIds[] = $distance->id;
+            
+            // Consider the inverse distance as visited
+            $inverse = $sortedDistances->filter(function ($v, $k) use ($distance) {
+                return $v->bus_stop_from_id === $distance->bus_stop_to_id && $v->bus_stop_to_id === $distance->bus_stop_from_id;
+            });
+            if ($inverse->count() > 0) {
+                $visitedIds[] = $inverse->first()->id;
+            }
+        }
         
         return $visitedIds;
     }
