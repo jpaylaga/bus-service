@@ -2,7 +2,9 @@
 
 namespace App\Repositories;
 
+use Carbon\Carbon;
 use App\Models\BusSchedule;
+use App\Models\BusStop;
 use Illuminate\Database\Eloquent\Collection;
 
 class BusScheduleRepository implements BusScheduleRepositoryInterface
@@ -47,5 +49,18 @@ class BusScheduleRepository implements BusScheduleRepositoryInterface
     public function update($id, array $data)
     {
         BusSchedule::find($id)->update($data);
+    }
+    
+    /**
+     * {@inheritDoc}
+     * @see \App\Repositories\BusScheduleRepositoryInterface::getLatestSchedule()
+     */
+    public function getLatestSchedule(BusStop $busStop, $currentDayOfWeek, Carbon $currentDateTime = null): ?BusSchedule
+    {
+        $currentDateTime = $currentDateTime === null ? Carbon::now() : $currentDateTime;
+        return $busStop->busSchedules()->where([
+            ['time_of_day', '>=', $currentDateTime->format('H:i:s')],
+            ['day_of_week', '=', $currentDayOfWeek],
+        ])->orderBy('time_of_day', 'asc')->first();
     }
 }

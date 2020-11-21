@@ -10,6 +10,19 @@ use Illuminate\Database\Eloquent\Collection;
 class BusStopRepository implements BusStopRepositoryInterface
 {
     /**
+     * @var BusScheduleRepositoryInterface
+     */
+    protected $busScheduleRepository;
+    
+    /**
+     * @param BusScheduleRepositoryInterface $busScheduleRepository
+     */
+    public function __construct(BusScheduleRepositoryInterface $busScheduleRepository)
+    {
+        $this->busScheduleRepository = $busScheduleRepository;
+    }
+    
+    /**
      * Get's a record by it's ID
      *
      * @param int
@@ -73,12 +86,7 @@ class BusStopRepository implements BusStopRepositoryInterface
 
         do {
             $currentDayOfWeek = BusSchedule::DAYS_OF_WEEK[$currentDayOfWeekCounter];
-
-            // This query can be optimized
-            $latestSchedule = $busStop->busSchedules()->where([
-                ['time_of_day', '>=', $currentDateTime->format('H:i:s')],
-                ['day_of_week', '=', $currentDayOfWeek],
-            ])->first();
+            $latestSchedule = $this->busScheduleRepository->getLatestSchedule($busStop, $currentDayOfWeek, $currentDateTime);
 
             if ($currentDayOfWeekCounter < 6) {
                 $currentDayOfWeekCounter++;
@@ -95,6 +103,7 @@ class BusStopRepository implements BusStopRepositoryInterface
         return $busStop->busSchedules()->with(['bus', 'busStop'])->where([
             ['time_of_day', '=', $latestSchedule->time_of_day],
             ['day_of_week', '=', $currentDayOfWeek],
+            ['is_active', '=', true],
         ])->get();
     }
 

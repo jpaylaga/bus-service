@@ -2,6 +2,10 @@
 
 namespace App\Repositories;
 
+use Carbon\Carbon;
+use App\Models\BusSchedule;
+use App\Models\BusStop;
+
 interface BusScheduleRepositoryInterface
 {
     /**
@@ -32,4 +36,14 @@ interface BusScheduleRepositoryInterface
      * @param array
      */
     public function update($id, array $data);
+    
+    /**
+     * Get the latest schedule.
+     * 
+     * @param BusStop $busStop
+     * @param string $currentDayOfWeek
+     * @param Carbon $currentDateTime
+     * @return BusSchedule
+     */
+    public function getLatestSchedule(BusStop $busStop, $currentDayOfWeek, Carbon $currentDateTime = null): ?BusSchedule;
 }
