@@ -48,4 +48,15 @@ class BusStopDistanceRepository implements BusStopDistanceRepositoryInterface
     {
         BusStopDistance::find($id)->update($data);
     }
+    
+    /**
+     * {@inheritDoc}
+     * @see \App\Repositories\BusStopDistanceRepositoryInterface::getSorted()
+     */
+    public function getSorted(int $perPage = 20)
+    {
+        return BusStopDistance::orderBy('bus_stop_from_id', 'asc')
+            ->orderBy('eta_in_mins', 'asc')
+            ->paginate($perPage);
+    }
 }

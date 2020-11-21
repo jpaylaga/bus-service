@@ -32,4 +32,11 @@ interface BusStopDistanceRepositoryInterface
      * @param array
      */
     public function update($id, array $data);
+    
+    /**
+     * Get sorted 
+     * 
+     * @param int $perPage
+     */
+    public function getSorted(int $perPage = 20);
 }

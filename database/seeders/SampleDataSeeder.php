@@ -8,8 +8,9 @@ use App\Models\BusStop;
 use App\Models\BusStopDistance;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use phpDocumentor\Reflection\Types\Collection;
 use App\Repositories\BusStopDistanceRepositoryInterface;
+use Carbon\Carbon;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class SampleDataSeeder extends Seeder
 {
@@ -50,34 +51,32 @@ class SampleDataSeeder extends Seeder
                 }
             }
         }
-
-        // Schedules
-        $busStopDistanceRepository = resolve(BusStopDistanceRepositoryInterface::class);
-        foreach ($busStopDistanceRepository->all() as $distance) {
-            
-        }
         
-        /* foreach ($buses as $bus) {
-            foreach ($busStops as $busStop) {
-                $daysOfWeek = [
-                    'sunday',
-                    'monday',
-                    'tuesday',
-                    'wednesday',
-                    'thursday',
-                    'friday',
-                    'saturday',
-                ];
-
-                foreach ($daysOfWeek as $day) {
-                    BusSchedule::factory()->count(3)->state([
-                        'bus_id' => $bus->id,
-                        'bus_stop_id' => $busStop->id,
-                        'day_of_week' => $day,
-                    ])->create();
+        // Aggregiate starting buses by their starting bus stops
+        $aggregiate = [];
+        $numberOfBatches = ceil($buses->count() / $busStops->count());
+        $busIndex = 0;
+        foreach ($busStops as $busStop) {
+            $tmp = [
+                'bus_stop' => $busStop,
+                'buses' => [],
+            ];
+            for ($i = 0; $i < $numberOfBatches; $i++) {
+                $tmp['buses'][] = $buses[$busIndex++];
+                if (!isset($buses[$busIndex])) {
+                    break;
                 }
             }
-        } */
+            $aggregiate[] = $tmp;
+        }
+        
+        // Generate routes
+        $repo = resolve(BusStopDistanceRepositoryInterface::class);
+        foreach ($aggregiate as $a) {
+            foreach ($a['buses'] as $bus) {
+                $this->createRoutesPerBus($bus, $a['bus_stop'], $repo);
+            }
+        }
     }
     
     private function busOperators()
@@ -94,7 +93,7 @@ class SampleDataSeeder extends Seeder
     {
         $response = \GoogleMaps::load('nearbysearch')
             ->setParam([
-                'location' => '1.364313, 103.991305',
+                'location' => '1.364313, 103.991305', // Changi airport
                 'radius' => 1000000,
                 'type' => 'bus_station'
             ])
@@ -112,7 +111,6 @@ class SampleDataSeeder extends Seeder
         }
         
         return $returnValue;
-        
     }
     
     private function getDistanceDetail(BusStop $busStopFrom, BusStop $busStopTo)
@@ -133,12 +131,73 @@ class SampleDataSeeder extends Seeder
         ];
     }
     
-    private function createRoutesPerBus(Bus $bus, BusStop $startingBusStop, $startingHM)
+    private function createRoutesPerBus(Bus $bus, BusStop $startingBusStop, BusStopDistanceRepositoryInterface $busStopDistanceRepository)
     {
-        // TODO: Get sorted distances by mins
+        $sortedDistances = $busStopDistanceRepository->getSorted();
         
-        // TODO: Get shortest mins on distances from bus stop
+        $daysOfWeek = [
+            'sunday',
+            'monday',
+            'tuesday',
+            'wednesday',
+            'thursday',
+            'friday',
+            'saturday',
+        ];
         
-        // TODO: increment time per schedule based eta in mins. Limit to 24 hrs.
+        foreach ($daysOfWeek as $day) {
+            $visitedIds = [];
+            $previousDistance = null;
+            $currentDistance = null;
+            $startOfDay = Carbon::now()->startOfDay();
+            
+            // Get starting key
+            foreach ($sortedDistances as $distance) {
+                if ($distance->bus_stop_to_id === $startingBusStop->id) {
+                    $visitedIds = $this->generateSchedule($bus, $distance, $sortedDistances, $startOfDay, $day, $visitedIds, $currentDistance);
+                    break;
+                }
+            }
+            
+            for ($i = 0; $i < $sortedDistances->count(); $i++) {
+                foreach ($sortedDistances as $distance) {
+                    if ($distance->bus_stop_from_id === $currentDistance->bus_stop_to_id && !in_array($distance->id, $visitedIds)) {
+                        $visitedIds = $this->generateSchedule($bus, $distance, $sortedDistances, $startOfDay, $day, $visitedIds, $currentDistance);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
+    private function generateSchedule(
+        Bus $bus,
+        BusStopDistance $distance,
+        LengthAwarePaginator $sortedDistances,
+        Carbon $startOfDay,
+        $day,
+        array $visitedIds,
+        ?BusStopDistance &$currentDistance
+    ) {
+        $visitedIds[] = $distance->id;
+        $currentDistance = $distance;
+        
+        // Consider the inverse distance as visited
+        $inverse = $sortedDistances->filter(function ($v, $k) use ($distance) {
+            return $v->bus_stop_from_id === $distance->bus_stop_to_id && $v->bus_stop_to_id === $distance->bus_stop_from_id;
+        });
+        if ($inverse->count() > 0) {
+            $visitedIds[] = $inverse->first()->id;
+        }
+            
+        $startOfDay = $startOfDay->addMinutes($distance->eta_in_mins);
+        BusSchedule::factory()->create([
+            'bus_id' => $bus->id,
+            'bus_stop_id' => $currentDistance->bus_stop_to_id,
+            'day_of_week' => $day,
+            'time_of_day' => $startOfDay->format('H:i:s'),
+        ]);
+        
+        return $visitedIds;
     }
 }
