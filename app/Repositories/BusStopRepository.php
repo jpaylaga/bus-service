@@ -63,14 +63,41 @@ class BusStopRepository implements BusStopRepositoryInterface
     {
         BusStop::find($id)->update($data);
     }
+    
+    /**
+     * Create a BusStop.
+     * 
+     * @param array $data
+     * @return Collection
+     */
+    public function create(array $data)
+    {
+        return BusStop::firstOrCreate($data);        
+    }
 
     /**
      * @return mixed|void
      */
-    public function nearMe()
+    public function nearMe($lat, $long, $radius = 1000)
     {
+        $nearByBusStops = collect();
+        $nearByBusStopsRequest = $this->requestBusStops($lat, $long, $radius);
+        
+        $getExisting = BusStop::whereIn('address', $nearByBusStopsRequest->pluck('address'))->get();
+        foreach ($nearByBusStopsRequest as $requestedBusStop) {
+            $existed = $getExisting->filter(function($v, $K) use ($requestedBusStop) {
+                return $requestedBusStop['address'] === $v->address;
+            });
+            
+            if ($existed->count() <= 0) {
+                $nearByBusStops->push($this->create($requestedBusStop));
+            } else {
+                $nearByBusStops->push($existed->first());
+            }
+        }
+        
         // For now I am going to return all bus stops
-        return $this->all();
+        return $nearByBusStops;
     }
 
     /**
@@ -118,5 +145,38 @@ class BusStopRepository implements BusStopRepositoryInterface
         $scheduleToday = Carbon::parse($currentDateTime->format('Y-m-d') . ' ' . $busSchedule->time_of_day);
 
         return $scheduleToday->diffInMinutes($currentDateTime);
+    }
+    
+    /**
+     * Request nearby bus stations.
+     * 
+     * @param string $lat
+     * @param string $long
+     * @param int $radius
+     * @return NULL[][]
+     */
+    protected function requestBusStops($lat, $long, $radius)
+    {
+        $response = \GoogleMaps::load('nearbysearch')
+            ->setParam([
+                'location' => sprintf("%s, %s", $lat, $long),
+                'radius' => $radius,
+                'type' => 'bus_station'
+            ])
+            ->get();
+        
+        $busStopsReponse = json_decode($response);
+        
+        $returnValue = collect();
+        
+        foreach ($busStopsReponse->results as $busStop) {
+            $returnValue->push([
+                'lat' => $busStop->geometry->location->lat,
+                'long' => $busStop->geometry->location->lng,
+                'address' => $busStop->name,
+            ]);
+        }
+        
+        return $returnValue;
     }
 }

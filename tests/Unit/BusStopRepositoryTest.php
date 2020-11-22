@@ -28,10 +28,17 @@ class BusStopRepositoryTest extends TestCase
     {
         BusStop::factory()->count(3)->create();
 
-        $user = User::factory()->create();
-        $busStopsNearMe = $this->busStopRepository->nearMe($user);
+        $busStopsNearMe = $this->busStopRepository->nearMe('1.364313', '103.991305', 1000000);
 
-        $this->assertCount(3, $busStopsNearMe);
+        $this->assertCount(20, $busStopsNearMe);
+        
+        $currentBusStops = $this->busStopRepository->all();
+        
+        $this->assertCount(23, $currentBusStops);
+        
+        $busStopsNearMeShorterRadius = $this->busStopRepository->nearMe('1.364313', '103.991305', 1000);
+        
+        $this->assertCount(1, $busStopsNearMeShorterRadius);
     }
 
     /** @test */

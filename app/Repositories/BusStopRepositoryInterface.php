@@ -39,13 +39,21 @@ interface BusStopRepositoryInterface
      * @param array
      */
     public function update($id, array $data);
+    
+    /**
+     * Create a BusStop.
+     * 
+     * @param array $data
+     */
+    public function create(array $data);
 
     /**
      * Get buses near the user.
-     *
-     * @return mixed
+     * 
+     * @param string $lat
+     * @param string $long
      */
-    public function nearMe();
+    public function nearMe($lat, $long);
 
     /**
      * Get the next arrival per bus stop.
