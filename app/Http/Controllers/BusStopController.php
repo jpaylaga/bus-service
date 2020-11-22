@@ -28,9 +28,13 @@ class BusStopController extends Controller
      *
      * @return JsonResponse
      */
-    public function index()
+    public function index(Request $request)
     {
-        return $this->busStopRepository->nearMe();
+        return $this->busStopRepository->nearMe(
+                $request->query('lat'),
+                $request->query('long'),
+                $request->query('radius', 1000)
+            );
     }
 
     /**
