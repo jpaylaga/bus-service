@@ -11,6 +11,7 @@ use Illuminate\Database\Seeder;
 use App\Repositories\BusStopDistanceRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
+use App\Repositories\BusStopRepositoryInterface;
 
 class SampleDataSeeder extends Seeder
 {
@@ -34,10 +35,8 @@ class SampleDataSeeder extends Seeder
         }
         
         // Bus stops
-        $busStops = collect();
-        foreach ($this->busStops() as $busStop) {
-            $busStops->push(BusStop::factory()->create($busStop));
-        }
+        $busStopsRepo = resolve(BusStopRepositoryInterface::class);
+        $busStops = $busStopsRepo->nearMe('1.364313', '103.991305', 1000000); // Changi Airport
 
         // Distances between bus tops
         foreach ($busStops as $busStopFrom) {
@@ -90,31 +89,6 @@ class SampleDataSeeder extends Seeder
             'Tower Transit Singapore',
             'Go-Ahead Singapore',
         ];
-    }
-    
-    private function busStops()
-    {
-        $response = \GoogleMaps::load('nearbysearch')
-            ->setParam([
-                'location' => '1.364313, 103.991305', // Changi airport
-                'radius' => 1000000,
-                'type' => 'bus_station'
-            ])
-            ->get();
-        
-        $busStopsReponse = json_decode($response);
-        
-        $returnValue = [];
-        
-        foreach ($busStopsReponse->results as $busStop) {
-            $returnValue[] = [
-                'lat' => $busStop->geometry->location->lat,
-                'long' => $busStop->geometry->location->lng,
-                'address' => $busStop->name,
-            ];
-        }
-        
-        return $returnValue;
     }
     
     private function getDistanceDetail(BusStop $busStopFrom, BusStop $busStopTo)
