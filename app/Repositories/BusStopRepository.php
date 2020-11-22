@@ -5,7 +5,7 @@ namespace App\Repositories;
 use App\Models\BusSchedule;
 use App\Models\BusStop;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 
 class BusStopRepository implements BusStopRepositoryInterface
 {
