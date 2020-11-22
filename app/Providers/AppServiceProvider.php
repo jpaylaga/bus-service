@@ -14,9 +14,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton(BusRouteManager::class, function ($app) {
-            return new BusRouteManager($app);
-        });
+        //
     }
 
     /**
