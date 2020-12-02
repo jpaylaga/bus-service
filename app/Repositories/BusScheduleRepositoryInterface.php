@@ -36,10 +36,18 @@ interface BusScheduleRepositoryInterface
      * @param array
      */
     public function update($id, array $data);
-    
+
+    /**
+     * Create a record.
+     *
+     * @param array $data
+     * @return BusSchedule
+     */
+    public function create(array $data): BusSchedule;
+
     /**
      * Get the latest schedule.
-     * 
+     *
      * @param BusStop $busStop
      * @param string $currentDayOfWeek
      * @param Carbon $currentDateTime

@@ -6,6 +6,7 @@ use App\Models\BusSchedule;
 use App\Models\BusStop;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class BusStopRepository implements BusStopRepositoryInterface
 {
@@ -13,7 +14,7 @@ class BusStopRepository implements BusStopRepositoryInterface
      * @var BusScheduleRepositoryInterface
      */
     protected $busScheduleRepository;
-    
+
     /**
      * @param BusScheduleRepositoryInterface $busScheduleRepository
      */
@@ -21,7 +22,7 @@ class BusStopRepository implements BusStopRepositoryInterface
     {
         $this->busScheduleRepository = $busScheduleRepository;
     }
-    
+
     /**
      * Get's a record by it's ID
      *
@@ -63,41 +64,46 @@ class BusStopRepository implements BusStopRepositoryInterface
     {
         BusStop::find($id)->update($data);
     }
-    
+
     /**
      * Create a BusStop.
-     * 
+     *
      * @param array $data
      * @return Collection
      */
     public function create(array $data)
     {
-        return BusStop::firstOrCreate($data);        
+        return BusStop::firstOrCreate($data);
     }
 
     /**
+     * @param $lat
+     * @param $long
+     * @param int $radius
      * @return mixed|void
      */
     public function nearMe($lat, $long, $radius = 1000)
     {
-        $nearByBusStops = collect();
-        $nearByBusStopsRequest = $this->requestBusStops($lat, $long, $radius);
-        
-        $getExisting = BusStop::whereIn('address', $nearByBusStopsRequest->pluck('address'))->get();
-        foreach ($nearByBusStopsRequest as $requestedBusStop) {
-            $existed = $getExisting->filter(function($v, $K) use ($requestedBusStop) {
-                return $requestedBusStop['address'] === $v->address;
-            });
-            
-            if ($existed->count() <= 0) {
-                $nearByBusStops->push($this->create($requestedBusStop));
-            } else {
-                $nearByBusStops->push($existed->first());
+        $key = $lat . '_' . $long . '_' . $radius . '_near_me';
+        return Cache::remember($key, (60 * 60 * 24), function() use ($lat, $long, $radius) {
+            $nearByBusStops = collect();
+            $nearByBusStopsRequest = $this->requestBusStops($lat, $long, $radius);
+
+            $getExisting = BusStop::whereIn('address', $nearByBusStopsRequest->pluck('address'))->get();
+            foreach ($nearByBusStopsRequest as $requestedBusStop) {
+                $existed = $getExisting->filter(function($v, $K) use ($requestedBusStop) {
+                    return $requestedBusStop['address'] === $v->address;
+                });
+
+                if ($existed->count() <= 0) {
+                    $nearByBusStops->push($this->create($requestedBusStop));
+                } else {
+                    $nearByBusStops->push($existed->first());
+                }
             }
-        }
-        
-        // For now I am going to return all bus stops
-        return $nearByBusStops;
+
+            return $nearByBusStops;
+        });
     }
 
     /**
@@ -127,11 +133,14 @@ class BusStopRepository implements BusStopRepositoryInterface
             return collect();
         }
 
-        return $busStop->busSchedules()->with(['bus', 'busStop'])->where([
-            ['time_of_day', '=', $latestSchedule->time_of_day],
-            ['day_of_week', '=', $currentDayOfWeek],
-            ['is_active', '=', true],
-        ])->get();
+        $key = $busStop->id . '_' . $latestSchedule->day_of_week . '_' . $latestSchedule->time_of_day . '_next_arrival';
+        return Cache::remember($key, (60 * 60 * 24), function() use ($busStop, $latestSchedule, $currentDayOfWeek) {
+            return $busStop->busSchedules()->with(['bus', 'busStop'])->where([
+                ['time_of_day', '=', $latestSchedule->time_of_day],
+                ['day_of_week', '=', $currentDayOfWeek],
+                ['is_active', '=', true],
+            ])->get();
+        });
     }
 
     /**
@@ -146,10 +155,10 @@ class BusStopRepository implements BusStopRepositoryInterface
 
         return $scheduleToday->diffInMinutes($currentDateTime);
     }
-    
+
     /**
      * Request nearby bus stations.
-     * 
+     *
      * @param string $lat
      * @param string $long
      * @param int $radius
@@ -164,11 +173,11 @@ class BusStopRepository implements BusStopRepositoryInterface
                 'type' => 'bus_station'
             ])
             ->get();
-        
+
         $busStopsReponse = json_decode($response);
-        
+
         $returnValue = collect();
-        
+
         foreach ($busStopsReponse->results as $busStop) {
             $returnValue->push([
                 'lat' => $busStop->geometry->location->lat,
@@ -176,7 +185,7 @@ class BusStopRepository implements BusStopRepositoryInterface
                 'address' => $busStop->name,
             ]);
         }
-        
+
         return $returnValue;
     }
 }

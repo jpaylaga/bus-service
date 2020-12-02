@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\BusSchedule;
 use App\Models\BusStop;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Artisan;
 
 class BusScheduleRepository implements BusScheduleRepositoryInterface
 {
@@ -50,7 +51,18 @@ class BusScheduleRepository implements BusScheduleRepositoryInterface
     {
         BusSchedule::find($id)->update($data);
     }
-    
+
+    /**
+     * @param array $data
+     * @return BusSchedule
+     * @throws \Symfony\Component\Console\Exception\CommandNotFoundException
+     */
+    public function create(array $data): BusSchedule
+    {
+        Artisan::call('cache:clear');
+        return BusSchedule::create($data);
+    }
+
     /**
      * {@inheritDoc}
      * @see \App\Repositories\BusScheduleRepositoryInterface::getLatestSchedule()

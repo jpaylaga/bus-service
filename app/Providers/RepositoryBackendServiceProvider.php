@@ -38,10 +38,5 @@ class RepositoryBackendServiceProvider extends ServiceProvider
             BusStopDistanceRepositoryInterface::class,
             BusStopDistanceRepository::class,
         );
-
-        $this->app->bind(
-            CacheRecordRepositoryInterface::class,
-            CacheRecordRepository::class
-        );
     }
 }

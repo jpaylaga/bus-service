@@ -6,9 +6,11 @@ use App\Models\Bus;
 use App\Models\BusSchedule;
 use App\Models\BusStop;
 use App\Models\User;
+use App\Repositories\BusScheduleRepositoryInterface;
 use App\Repositories\BusStopRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Redis;
 use Tests\TestCase;
@@ -19,10 +21,14 @@ class BusStopRepositoryTest extends TestCase
 
     private $busStopRepository;
 
+    private $busScheduleRepository;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->busStopRepository = resolve(BusStopRepositoryInterface::class);
+        $this->busScheduleRepository = resolve(BusScheduleRepositoryInterface::class);
+        Artisan::call('cache:clear');
     }
 
     /** @test */
@@ -49,12 +55,12 @@ class BusStopRepositoryTest extends TestCase
         $bus1 = Bus::factory()->create();
         $busStop1 = BusStop::factory()->create();
 
-        $bs1 = BusSchedule::factory()->state([
+        $bs1 = $this->busScheduleRepository->create(BusSchedule::factory()->state([
             'bus_id' => $bus1->id,
             'bus_stop_id' => $busStop1->id,
             'time_of_day' => '01:00:00',
             'day_of_week' => 'monday',
-        ])->create();
+        ])->make()->toArray());
 
         $currentDateTime = Carbon::parse('2020-10-26 00:50:00');
 
@@ -69,12 +75,12 @@ class BusStopRepositoryTest extends TestCase
 
         $bus2 = Bus::factory()->create();
 
-        $bs2 = BusSchedule::factory()->state([
+        $bs2 = $this->busScheduleRepository->create(BusSchedule::factory()->state([
             'bus_id' => $bus2->id,
             'bus_stop_id' => $busStop1->id,
             'time_of_day' => '01:00:00',
             'day_of_week' => 'monday',
-        ])->create();
+        ])->make()->toArray());
 
         $bsOutput2 = $this->busStopRepository->nextArrival($busStop1, $currentDateTime);
         $this->assertCount(2, $bsOutput2);
@@ -102,11 +108,11 @@ class BusStopRepositoryTest extends TestCase
         $bus1 = Bus::factory()->create();
         $busStop1 = BusStop::factory()->create();
 
-        $bs1 = BusSchedule::factory()->state([
+        $bs1 = $this->busScheduleRepository->create(BusSchedule::factory()->state([
             'bus_id' => $bus1->id,
             'bus_stop_id' => $busStop1->id,
             'time_of_day' => '01:00:00',
-        ])->create();
+        ])->make()->toArray());
 
         $this->assertEquals(10, $this->busStopRepository->estimatedTimeOfArrivalInMinutes($bs1, $currentDateTime));
     }
