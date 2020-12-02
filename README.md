@@ -52,6 +52,12 @@ CACHE_DRIVER=redis
 If you have additional configuration for connecting to redis, please refer to the following file
 
     config/database.php
+    
+Add google maps api key on .env file
+
+```
+GOOGLE_MAPS_SERVICE_KEY=<google maps api key here>
+```
 
 Run the database migrations
 
