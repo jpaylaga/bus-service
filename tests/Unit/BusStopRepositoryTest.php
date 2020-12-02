@@ -9,6 +9,8 @@ use App\Models\User;
 use App\Repositories\BusStopRepositoryInterface;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Redis;
 use Tests\TestCase;
 
 class BusStopRepositoryTest extends TestCase
@@ -31,13 +33,13 @@ class BusStopRepositoryTest extends TestCase
         $busStopsNearMe = $this->busStopRepository->nearMe('1.364313', '103.991305', 1000000);
 
         $this->assertCount(20, $busStopsNearMe);
-        
+
         $currentBusStops = $this->busStopRepository->all();
-        
+
         $this->assertCount(23, $currentBusStops);
-        
+
         $busStopsNearMeShorterRadius = $this->busStopRepository->nearMe('1.364313', '103.991305', 1000);
-        
+
         $this->assertCount(1, $busStopsNearMeShorterRadius);
     }
 

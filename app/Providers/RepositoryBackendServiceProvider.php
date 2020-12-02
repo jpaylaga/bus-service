@@ -10,6 +10,8 @@ use App\Repositories\BusStopDistanceRepository;
 use App\Repositories\BusStopDistanceRepositoryInterface;
 use App\Repositories\BusStopRepository;
 use App\Repositories\BusStopRepositoryInterface;
+use App\Repositories\CacheRecordRepository;
+use App\Repositories\CacheRecordRepositoryInterface;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryBackendServiceProvider extends ServiceProvider
@@ -35,6 +37,11 @@ class RepositoryBackendServiceProvider extends ServiceProvider
         $this->app->bind(
             BusStopDistanceRepositoryInterface::class,
             BusStopDistanceRepository::class,
+        );
+
+        $this->app->bind(
+            CacheRecordRepositoryInterface::class,
+            CacheRecordRepository::class
         );
     }
 }
