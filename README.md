@@ -10,6 +10,8 @@
 
 Please check the official laravel installation guide for server requirements before you start. [Official Documentation](https://laravel.com/docs/8.x/installation#installation)
 
+Please also note that you need to install redis on your server. [Redis Quickstart](https://redis.io/topics/quickstart)
+
 Clone the repository
 
     git clone git@github.com:jpaylaga/bus-service.git
@@ -40,6 +42,16 @@ DB_DATABASE=your_database_name
 DB_USERNAME=your_database_username
 DB_PASSWORD=your_database_password
 ```
+
+You would also need to change the cache driver to use redis
+
+```
+CACHE_DRIVER=redis
+```
+
+If you have additional configuration for connecting to redis, please refer to the following file
+
+    config/database.php
 
 Run the database migrations
 
