@@ -1,3 +1,6 @@
+> [!NOTE]
+> Take-home test from 2020, kept as submitted. A retrospective was added in October 2026: see [Looking back](#looking-back-added-october-2026).
+
 # Bus Service Project Assignment
 
 > ### This is the back-end side of the Bus Service test given to me.
@@ -112,3 +115,23 @@ The api can be accessed at [http://localhost:8000/api](http://localhost:8000/api
 - [laravel/passport](https://github.com/laravel/passport) - For authenticating with oauth
 - [alexpechkarev/google-maps](https://github.com/alexpechkarev/google-maps) - For searching nearby bus stops and eta calculations
 - [salmanzafar/laravel-repository-pattern](https://github.com/salmanzafar949/Laravel-Repository-Pattern) - For repository pattern generation
+
+---
+
+## Looking back (added October 2026)
+
+*Everything above this line is the original README. This section was added later and the code was not changed.*
+
+### What I would improve
+
+- **Auth:** a browser cannot keep an OAuth client secret, so I would make these read-only endpoints public (validated and rate limited) or keep the secret behind a small server-side proxy.
+- **Next arrivals:** compute departures as full datetimes in the stop's timezone, so the search crosses midnight and the whole week, and return an `arrives_at` timestamp instead of minutes.
+- **Bus stop data:** import stops once, keyed by Google `place_id` with numeric coordinates and a spatial index, and answer "near me" from the database by distance instead of calling Google inside a GET.
+- **HTTP layer:** Form Requests for `lat`, `long` and `radius`, route model binding so an unknown stop is a 404, and API Resources with one response shape.
+- **Structure:** repositories only for queries, Google and ETA logic in small injectable classes, and per-stop cache invalidation instead of `cache:clear`.
+- **Tests:** fake Google and the cache, add feature tests for both endpoints, and pin midnight and week-wrap cases with `Carbon::setTestNow()`.
+- **Setup:** Docker Compose for MySQL and Redis, a complete `.env.example`, a seeder that needs no Google key, CI with Larastan and Pint, and current Laravel and PHP.
+
+### Corrections to the original README
+
+- The API is served at `/bus-stops`, not under `/api` (the prefix was removed late in development).
